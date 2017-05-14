@@ -1,0 +1,85 @@
+<%= render 'partial/navbar' %>
+<div class="container">
+  <div class="col-md-3">
+    <%= render 'partial/verticalnavbar' %>
+  </div>
+
+  <div class="col-md-9">
+    <div class="panel-default">
+      <div class="panel-heading">
+        <div class="text-center">
+          <span  style="font-size:24px;">リスティング写真の編集</span>
+        </div>
+      </div>
+
+      <div class="panel-body">
+        <%= form_for @photo, html:{multipart: true, :class => "dropzone", id:"my-dropzone"} do |f| %>
+          <%= f.hidden_field :listing_id, value: @listing.id %>
+          <div class="dz-message needclick">
+            <h3>ファイルをここにドロップしてください</h3>
+            <strong>アップロードするにはここをクリックしてください</strong>
+          </div>
+
+          <div class="fallback">
+            <%= f.file_field :image %>
+            <%= f.submit "アップロード" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  $(function(){
+  Dropzone.autoDiscover = false;
+
+  $("#my-dropzone").dropzone({
+    maxFilesize:200, //MB
+    addRemoveLinks: true, //削除リンク,Cancelリンクを全てのpreviewファイルに付ける
+    paramName: 'photo[image]' , //パラメータの名前
+    success:  function(file,response){
+      $(file.previewElement).addClass('dz-success');
+      $(file.previewElement).find('dz-remove').attr('id',response.photoId);
+    },
+    removedfile: function(file){
+      var id = $(file.previewTemplate).find('.dz-remove').attr('id');
+      $.ajax({
+        type: 'DELETE',
+        url: "/photos/" + id ,
+        success: finction(data) {
+          console.log(data.message);
+        }
+      });
+
+      var previewElement;
+      return (previewElement = file.previewElement) != null ? (previewElement.parentNode.removeChild(file.previewElement)) :(void 0);
+    },
+
+    init: function(){
+
+      var me = this;
+      me.on("complete", function(file){
+        $(file.previewTemplate).find('.dz-remove').text("削除する");
+      });
+
+      $.ajax({
+        type: "GET",
+        url: "/photos/list",
+        data: {'listing_id': <%= @listing.id %>},
+        datatype: 'json'
+        success:function(data){
+          $.each(data.image,function(key,value)){
+            if (data.images != undefined && data.images.length > 0){
+              me.emit("addedfile", value);
+              me.emit("thumbnail",value,value.src);
+              me.emit("complete",value);
+              $(value._removelink).attr("id", value.id);
+            }
+          });
+        }
+      });
+    }
+  });
+});
+</script>
