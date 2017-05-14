@@ -6,7 +6,7 @@ git_source(:github) do |repo_name|
 end
 
 gem 'rails', '~> 5.0.2'
-gem 'sqlite3','~> 1.3.13'
+gem 'sqlite3', :group => [:development, :test]
 gem 'puma', '~> 3.0'
 gem 'sass-rails', '~> 5.0'
 gem 'uglifier', '>= 1.3.0'
@@ -25,11 +25,12 @@ gem "figaro",'~> 1.1.1'
 group :production do
     gem 'pg'
     gem 'rails_12factor'
+    gem 'thin'
 end
 
 
 group :development, :test do
-    gem 'sqlite3','~> 1.3.13'
+    gem 'sqlite3'
 end
 
 group :development, :test do
